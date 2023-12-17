@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int         @id @default(autoincrement())
+  name       String
+  email      String      @unique
+  role       String
+  password   String
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  userDetail UserDetail?
+  invoice    Invoice[]
+
+  @@map("users")
+}
+
+model UserDetail {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int      @unique @map("user_id")
+  phoneNumber String   @unique @map("phone_number")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("user_details")
+}
+
+model Event {
+  id                    Int             @id @default(autoincrement())
+  name                  String
+  slug                  String          @unique
+  eventDate             DateTime        @map("event_date")
+  registrationStartDate DateTime        @map("registration_start_date")
+  registrationEndDate   DateTime        @map("registration_end_date")
+  status                Boolean
+  createdAt             DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime        @updatedAt @map("updated_at")
+  eventCategory         EventCategory[]
+
+  @@map("events")
+}
+
+model EventCategory {
+  id        Int       @id @default(autoincrement())
+  event     Event     @relation(fields: [eventId], references: [id])
+  eventId   Int       @map("event_id")
+  name      String
+  slug      String    @unique
+  price     Int
+  status    Boolean
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  invoice   Invoice[]
+
+  @@map("event_categories")
+}
+
+model Invoice {
+  id               Int           @id @default(autoincrement())
+  user             User          @relation(fields: [userId], references: [id])
+  userId           Int           @map("user_id")
+  eventCategory    EventCategory @relation(fields: [eventCategoryId], references: [id])
+  eventCategoryId  Int           @map("event_category_id")
+  xenditExternalId String        @map("xendit_external_id")
+  xenditId         String        @map("xendit_id")
+  xenditUrl        String        @map("xendit_url")
+  isPaid           Int           @map("is_paid")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  @@map("invoices")
+}
